@@ -1,0 +1,25 @@
+http:
+  routers:
+    myweb:
+      rule: "Host(`papun1.local`)"
+      service: myweb
+    myapp1:
+      rule: "Host(`papun1.local`) && PathPrefix(`/app1`)"
+      service: myapp1
+    myapp2:
+      rule: "Host(`papun3.local`) && PathPrefix(`/app2`)"
+      service: myapp2
+
+  services:
+    myweb:
+      loadBalancer:
+        servers:
+          - url: "http://web:3000"
+    myapp1:
+      loadBalancer:
+        servers:
+          - url: "http://app1:1001"
+    myapp2:
+      loadBalancer:
+        servers:
+          - url: "http://app1:1002"

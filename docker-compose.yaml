@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  traefik:
+    image: traefik:v2.10
+    command:
+      - "--api.insecure=true"  # เปิดการเข้าถึง Dashboard
+      - "--providers.docker=true"  # เปิดใช้งาน Docker provider
+      - "--entrypoints.web.address=:80"  # กำหนด entrypoint สำหรับ HTTP
+      - "--providers.file.filename=/etc/traefik/routes.yaml"  # ใช้ file provider สำหรับ routing rules
+    ports:
+      - "80:80"    # HTTP
+      - "8080:8080"  # Dashboard
+    volumes:
+      - "./traefik.yaml:/etc/traefik/traefik.yaml"
+      - "./routes.yaml:/etc/traefik/routes.yaml"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"  # เชื่อม Docker socket
+  web:
+    build:
+      context: ./  # Path to the directory containing your Dockerfile
+      dockerfile: ./Dockerfile
+    environment:
+      NODE_ENV: production
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.web.rule=Host(`papun1.local`)"
+      - "traefik.http.services.web.loadbalancer.server.port=3000"
+    deploy:
+      replicas: 3  # รัน 3 instance ของ web
